@@ -277,19 +277,19 @@ public class InterfaceTexto {
                 gerirProjetos(coordenador);
                 break;
             case 3:
-                adicionarInvestigadorAProjeto();
+                adicionarInvestigadorAProjeto(coordenador);
                 break;
             case 4:
-                removerInvestigadorDeProjeto();
+                removerInvestigadorDeProjeto(coordenador);
                 break;
             case 5:
-                registarAtividade();
+                registarAtividade(coordenador);
                 break;
             case 6:
-                verAtividadesDeProjeto();
+                verAtividadesDeProjeto(coordenador);
                 break;
             case 7:
-                alterarEstadoProjeto();
+                alterarEstadoProjeto(coordenador);
                 break;
             case 0:
                 logout();
@@ -391,14 +391,7 @@ public class InterfaceTexto {
             System.out.print("\nID do projeto a remover: ");
             int projetoId = Integer.parseInt(scanner.nextLine().trim());
             
-            Projeto projeto = sistema.obterProjeto(projetoId);
-            
-            // Verifica se o projeto pertence ao coordenador
-            if (projeto.getCoordenadorId() != coordenador.getId()) {
-                System.out.println("\n[ERRO] Não pode remover projetos de outros coordenadores!");
-                return;
-            }
-            
+            sistema.obterProjetoDoCoordenador(projetoId, coordenador.getId());
             sistema.removerProjeto(projetoId);
             System.out.println("\n[OK] Projeto removido com sucesso!");
             
@@ -409,21 +402,17 @@ public class InterfaceTexto {
         }
     }
 
-    private void adicionarInvestigadorAProjeto() {
+    private void adicionarInvestigadorAProjeto(Coordenador coordenador) {
         System.out.println("\n╔═══════════════════════════════════════╗");
         System.out.println("║   ADICIONAR INVESTIGADOR A PROJETO    ║");
         System.out.println("╚═══════════════════════════════════════╝");
         
         try {
-            // Mostrar projetos
-            List<Projeto> projetos = sistema.listarProjetos();
-            System.out.println("\nProjetos disponíveis:");
-            for (Projeto p : projetos) {
-                System.out.println("  [" + p.getId() + "] " + p.getTitulo());
-            }
+            mostrarProjetosDoCoordenador(coordenador);
             
             System.out.print("\nID do projeto: ");
             int projetoId = Integer.parseInt(scanner.nextLine().trim());
+            sistema.obterProjetoDoCoordenador(projetoId, coordenador.getId());
             
             // Mostrar investigadores
             List<Investigador> investigadores = sistema.listarInvestigadores();
@@ -448,16 +437,18 @@ public class InterfaceTexto {
         aguardarEnter();
     }
     
-    private void removerInvestigadorDeProjeto() {
+    private void removerInvestigadorDeProjeto(Coordenador coordenador) {
         System.out.println("\n╔═══════════════════════════════════════╗");
         System.out.println("║   REMOVER INVESTIGADOR DE PROJETO     ║");
         System.out.println("╚═══════════════════════════════════════╝");
         
         try {
-            System.out.print("ID do projeto: ");
+            mostrarProjetosDoCoordenador(coordenador);
+            
+            System.out.print("\nID do projeto: ");
             int projetoId = Integer.parseInt(scanner.nextLine().trim());
             
-            Projeto projeto = sistema.obterProjeto(projetoId);
+            Projeto projeto = sistema.obterProjetoDoCoordenador(projetoId, coordenador.getId());
             System.out.println("\nInvestigadores no projeto:");
             for (int invId : projeto.getInvestigadoresIds()) {
                 Investigador inv = sistema.obterInvestigador(invId);
@@ -479,13 +470,13 @@ public class InterfaceTexto {
         aguardarEnter();
     }
     
-    private void registarAtividade() {
+    private void registarAtividade(Coordenador coordenador) {
         System.out.println("\n╔═══════════════════════════════════════╗");
         System.out.println("║       REGISTAR ATIVIDADE              ║");
         System.out.println("╚═══════════════════════════════════════╝");
         
         try {
-            List<Projeto> projetos = sistema.listarProjetos();
+            List<Projeto> projetos = sistema.listarProjetosDoCoordenador(coordenador.getId());
             List<Projeto> projetosDisponiveis = new ArrayList<>();
             
             for (Projeto p : projetos) {
@@ -509,7 +500,7 @@ public class InterfaceTexto {
             System.out.print("\nID do projeto: ");
             int projetoId = Integer.parseInt(scanner.nextLine().trim());
             
-            Projeto projeto = sistema.obterProjeto(projetoId);
+            Projeto projeto = sistema.obterProjetoDoCoordenador(projetoId, coordenador.getId());
             
             if (!projeto.getEstado().name().equals("EM_CURSO") && !projeto.getEstado().name().equals("PLANEAMENTO")) {
                 System.out.println("\n[ERRO] Só pode registar atividades em projetos EM_CURSO ou PLANEAMENTO!");
@@ -546,20 +537,17 @@ public class InterfaceTexto {
         aguardarEnter();
     }
     
-    private void verAtividadesDeProjeto() {
+    private void verAtividadesDeProjeto(Coordenador coordenador) {
         System.out.println("\n╔═══════════════════════════════════════╗");
         System.out.println("║     ATIVIDADES DE PROJETO             ║");
         System.out.println("╚═══════════════════════════════════════╝");
         
         try {
-            List<Projeto> projetos = sistema.listarProjetos();
-            System.out.println("\nProjetos:");
-            for (Projeto p : projetos) {
-                System.out.println("  [" + p.getId() + "] " + p.getTitulo());
-            }
+            mostrarProjetosDoCoordenador(coordenador);
             
             System.out.print("\nID do projeto: ");
             int projetoId = Integer.parseInt(scanner.nextLine().trim());
+            sistema.obterProjetoDoCoordenador(projetoId, coordenador.getId());
             
             List<Atividade> atividades = sistema.listarAtividadesDoProjeto(projetoId);
             
@@ -574,25 +562,24 @@ public class InterfaceTexto {
             
         } catch (NumberFormatException e) {
             System.out.println("\n[ERRO] ID inválido!");
+        } catch (EntidadeException e) {
+            System.out.println("\n[ERRO] Erro: " + e.getMessage());
         }
         
         aguardarEnter();
     }
     
-    private void alterarEstadoProjeto() {
+    private void alterarEstadoProjeto(Coordenador coordenador) {
         System.out.println("\n╔═══════════════════════════════════════╗");
         System.out.println("║     ALTERAR ESTADO DE PROJETO         ║");
         System.out.println("╚═══════════════════════════════════════╝");
         
         try {
-            List<Projeto> projetos = sistema.listarProjetos();
-            System.out.println("\nProjetos:");
-            for (Projeto p : projetos) {
-                System.out.println("  [" + p.getId() + "] " + p.getTitulo() + " (" + p.getEstado() + ")");
-            }
+            mostrarProjetosDoCoordenador(coordenador);
             
             System.out.print("\nID do projeto: ");
             int projetoId = Integer.parseInt(scanner.nextLine().trim());
+            sistema.obterProjetoDoCoordenador(projetoId, coordenador.getId());
             
             System.out.println("\nNovo estado:");
             System.out.println("1. Em Curso");
@@ -625,6 +612,13 @@ public class InterfaceTexto {
         }
         
         aguardarEnter();
+    }
+    
+    private void mostrarProjetosDoCoordenador(Coordenador coordenador) {
+        System.out.println("\nOs seus projetos:");
+        for (Projeto p : sistema.listarProjetosDoCoordenador(coordenador.getId())) {
+            System.out.println("  [" + p.getId() + "] " + p.getTitulo() + " (" + p.getEstado().getDescricao() + ")");
+        }
     }
     
     // ========== MENU ADMINISTRADOR ==========

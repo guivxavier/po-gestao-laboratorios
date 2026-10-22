@@ -427,6 +427,15 @@ public class SistemaLaboratorios implements Serializable {
         return proj;
     }
     
+    // Usado nos menus do coordenador: só pode mexer nos projetos que são dele
+    public Projeto obterProjetoDoCoordenador(int projetoId, int coordenadorId) throws EntidadeException {
+        Projeto proj = obterProjeto(projetoId);
+        if (proj.getCoordenadorId() != coordenadorId) {
+            throw new EntidadeException("Este projeto pertence a outro coordenador");
+        }
+        return proj;
+    }
+
     public List<Projeto> listarProjetos() {
         return new ArrayList<>(projetos);
     }
