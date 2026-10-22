@@ -5,7 +5,7 @@ import java.io.File;
 
 
 public class Main {
-    private static final String FICHEIRO_DADOS = "sistema_laboratorios.dat";
+    private static final String FICHEIRO_DADOS = SistemaLaboratorios.FICHEIRO_DADOS;
     
     public static void main(String[] args) {
         SistemaLaboratorios sistema;
@@ -17,7 +17,7 @@ public class Main {
                 sistema = SistemaLaboratorios.carregarDados(FICHEIRO_DADOS);
                 System.out.println("✓ Dados carregados do ficheiro: " + FICHEIRO_DADOS);
             } catch (Exception e) {
-                System.out.println("⚠ Erro ao carregar dados. A criar novo sistema...");
+                System.out.println("⚠ Erro ao carregar dados (" + e.getMessage() + "). A criar novo sistema...");
                 sistema = new SistemaLaboratorios();
                 DadosIniciais.popularSistema(sistema);
             }

@@ -50,6 +50,14 @@ public class Projeto implements Serializable {
         this.coordenadorId = coordenadorId;
     }
     
+    // O contador é static, por isso não é guardado no ficheiro.
+    // Depois de carregar os dados é preciso acertá-lo para não repetir IDs.
+    public static void atualizarContador(int ultimoId) {
+        if (ultimoId >= contadorID) {
+            contadorID = ultimoId + 1;
+        }
+    }
+    
     // Getters
     public int getId() {
         return id;

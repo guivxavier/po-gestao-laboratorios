@@ -1080,7 +1080,7 @@ public class InterfaceTexto {
     
     private void guardarESair() {
         try {
-            sistema.guardarDados("dados.dat");
+            sistema.guardarDados(SistemaLaboratorios.FICHEIRO_DADOS);
             System.out.println("\n[OK] Dados guardados com sucesso!");
             System.out.println("Até breve!");
             System.exit(0);

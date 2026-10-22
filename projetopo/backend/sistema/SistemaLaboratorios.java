@@ -9,6 +9,7 @@ import java.util.*;
 // Sistema central - aqui fica toda a lógica de negócio
 public class SistemaLaboratorios implements Serializable {
     private static final long serialVersionUID = 1L;
+    public static final String FICHEIRO_DADOS = "sistema_laboratorios.dat";
     
     private ArrayList<Investigador> investigadores;
     private ArrayList<Coordenador> coordenadores;
@@ -583,7 +584,30 @@ public class SistemaLaboratorios implements Serializable {
     
     public static SistemaLaboratorios carregarDados(String ficheiro) throws IOException, ClassNotFoundException {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(ficheiro))) {
-            return (SistemaLaboratorios) ois.readObject();
+            SistemaLaboratorios sistema = (SistemaLaboratorios) ois.readObject();
+            sistema.atualizarContadores();
+            return sistema;
+        }
+    }
+    
+    private void atualizarContadores() {
+        for (Investigador inv : investigadores) {
+            Utilizador.atualizarContador(inv.getId());
+        }
+        for (Coordenador coord : coordenadores) {
+            Utilizador.atualizarContador(coord.getId());
+        }
+        for (Administrador admin : administradores) {
+            Utilizador.atualizarContador(admin.getId());
+        }
+        for (Laboratorio lab : laboratorios) {
+            Laboratorio.atualizarContador(lab.getId());
+        }
+        for (Projeto proj : projetos) {
+            Projeto.atualizarContador(proj.getId());
+        }
+        for (Atividade at : atividades) {
+            Atividade.atualizarContador(at.getId());
         }
     }
 }
