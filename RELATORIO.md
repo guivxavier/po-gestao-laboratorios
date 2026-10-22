@@ -55,7 +55,7 @@ Utilizador (classe pai abstrata)
 **Porquê?**
 - Todos os utilizadores têm ID, nome, email e password → vão para a classe `Utilizador`
 - Todos os investigadores têm laboratório, projetos e atividades → vão para a classe `Investigador`
-- Cada tipo específico só adiciona o que é único (ex: InvestigadorBiotecnologia tem `especializacaoOrganismo`)
+- Cada tipo específico só adiciona o que é único (ex: InvestigadorBiotecnologia tem `areaInvestigacao`)
 
 **Exemplo prático:**
 ```java
@@ -73,7 +73,7 @@ public abstract class Investigador extends Utilizador {
 }
 
 public class InvestigadorBiotecnologia extends Investigador {
-    private String especializacaoOrganismo;
+    private String areaInvestigacao;
     // ... só este tipo tem esta característica específica
 }
 ```
@@ -145,7 +145,7 @@ public abstract class Investigador extends Utilizador {
 public class InvestigadorBiotecnologia extends Investigador {
     @Override
     public String getDetalhesEspecificos() {
-        return "Especialização: " + especializacaoOrganismo;
+        return "Área de Investigação: " + areaInvestigacao;
     }
 }
 ```
@@ -330,7 +330,7 @@ Embora não seja um Singleton puro, só existe uma instância de `SistemaLaborat
 // No Main.java
 SistemaLaboratorios sistema;
 try {
-    sistema = SistemaLaboratorios.carregarDados("dados_sistema.dat");
+    sistema = SistemaLaboratorios.carregarDados("sistema_laboratorios.dat");
 } catch (Exception e) {
     sistema = new SistemaLaboratorios();
     // Carregar dados iniciais
@@ -352,7 +352,7 @@ Esta única instância é passada para a interface e usada em todo o programa.
 ### 8.1 Inicialização
 
 1. `Main.java` executa
-2. Tenta carregar dados do ficheiro `dados_sistema.dat`
+2. Tenta carregar dados do ficheiro `sistema_laboratorios.dat`
 3. Se não existir, cria sistema novo e carrega dados iniciais
 4. Lança a interface de texto
 
@@ -380,7 +380,7 @@ Esta única instância é passada para a interface e usada em todo o programa.
 ### 8.4 Guardar e Sair
 
 1. Utilizador escolhe "Sair"
-2. Sistema serializa tudo para `dados_sistema.dat`
+2. Sistema serializa tudo para `sistema_laboratorios.dat`
 3. Programa termina
 
 ---
@@ -501,6 +501,10 @@ public Utilizador() {
 
 Cada entidade recebe um ID único automaticamente.
 
+Como o contador é `static`, não é guardado no ficheiro. Por isso, depois de carregar os dados,
+o sistema acerta os contadores com o maior ID existente (`atualizarContador`), para não
+voltar a criar IDs repetidos.
+
 ### 12.2 Cópias Defensivas
 
 ```java
@@ -554,11 +558,11 @@ A IDE compila automaticamente.
 
 No primeiro arranque, o sistema cria:
 
-- 1 Administrador (admin@sistema.pt / admin123)
+- 1 Administrador (admin@lab.pt / admin123)
 - 3 Laboratórios (Biotecnologia, Robótica, Energia)
-- 1 Coordenador de exemplo
-- 3 Investigadores de exemplo
-- 2 Projetos de exemplo
+- 2 Coordenadores (ex: manuel.vieira@lab.pt / coord123)
+- 6 Investigadores, 2 de cada tipo (ex: gui.xavier@lab.pt / inv123)
+- 3 Projetos de exemplo
 - Algumas atividades de exemplo
 
 **Localização:** Classe `DadosIniciais.java`
