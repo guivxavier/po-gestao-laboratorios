@@ -104,6 +104,10 @@ public class Projeto implements Serializable {
         this.estado = estado;
     }
     
+    public boolean aceitaAtividades() {
+        return estado == EstadoProjeto.EM_CURSO || estado == EstadoProjeto.PLANEAMENTO;
+    }
+    
     // Métodos de gestão
     public void adicionarLaboratorio(int laboratorioId) {
         if (!laboratoriosIds.contains(laboratorioId)) {

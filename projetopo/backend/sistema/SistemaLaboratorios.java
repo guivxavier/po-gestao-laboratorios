@@ -101,6 +101,26 @@ public class SistemaLaboratorios implements Serializable {
         return null;
     }
     
+    // ========== Validações ==========
+    
+    private void validarTexto(String valor, String campo) throws EntidadeException {
+        if (valor == null || valor.trim().isEmpty()) {
+            throw new EntidadeException(campo + " não pode estar vazio");
+        }
+    }
+    
+    private void validarEmailLivre(String email) throws EntidadeException {
+        validarTexto(email, "Email");
+        if (!email.contains("@") || email.startsWith("@") || email.endsWith("@")) {
+            throw new EntidadeException("Email inválido: " + email);
+        }
+        if (encontrarInvestigadorPorEmail(email) != null ||
+            encontrarCoordenadorPorEmail(email) != null ||
+            encontrarAdministradorPorEmail(email) != null) {
+            throw new EntidadeException("Email já está em uso");
+        }
+    }
+    
     // ========== Login ==========
     
     public Utilizador autenticar(String email, String password) throws AutenticacaoException {
@@ -125,17 +145,34 @@ public class SistemaLaboratorios implements Serializable {
         throw new AutenticacaoException("Email ou password incorretos");
     }
     
+    // ========== Editar dados pessoais ==========
+    
+    public void alterarNome(Utilizador utilizador, String novoNome) throws EntidadeException {
+        validarTexto(novoNome, "Nome");
+        utilizador.setNomeCompleto(novoNome);
+    }
+    
+    public void alterarEmail(Utilizador utilizador, String novoEmail) throws EntidadeException {
+        if (utilizador.getEmail().equals(novoEmail)) {
+            return;
+        }
+        validarEmailLivre(novoEmail);
+        utilizador.setEmail(novoEmail);
+    }
+    
+    public void alterarPassword(Utilizador utilizador, String novaPassword) throws EntidadeException {
+        validarTexto(novaPassword, "Password");
+        utilizador.setPassword(novaPassword);
+    }
+    
     // ========== Gerir Investigadores ==========
     
     public Investigador adicionarInvestigador(String tipo, String nomeCompleto, String email, 
                                              String password, int laboratorioId, 
                                              String detalheEspecifico) throws EntidadeException {
-        // Verificar se o email já existe
-        if (encontrarInvestigadorPorEmail(email) != null || 
-            encontrarCoordenadorPorEmail(email) != null ||
-            encontrarAdministradorPorEmail(email) != null) {
-            throw new EntidadeException("Email já está em uso");
-        }
+        validarTexto(nomeCompleto, "Nome");
+        validarTexto(password, "Password");
+        validarEmailLivre(email);
         
         Laboratorio lab = encontrarLaboratorioPorId(laboratorioId);
         if (lab == null) {
@@ -218,11 +255,9 @@ public class SistemaLaboratorios implements Serializable {
     
     public Coordenador adicionarCoordenador(String nomeCompleto, String email, String password) 
             throws EntidadeException {
-        if (encontrarInvestigadorPorEmail(email) != null || 
-            encontrarCoordenadorPorEmail(email) != null ||
-            encontrarAdministradorPorEmail(email) != null) {
-            throw new EntidadeException("Email já está em uso");
-        }
+        validarTexto(nomeCompleto, "Nome");
+        validarTexto(password, "Password");
+        validarEmailLivre(email);
         
         Coordenador coordenador = new Coordenador(nomeCompleto, email, password);
         coordenadores.add(coordenador);
@@ -260,11 +295,9 @@ public class SistemaLaboratorios implements Serializable {
     
     public Administrador adicionarAdministrador(String nomeCompleto, String email, String password) 
             throws EntidadeException {
-        if (encontrarInvestigadorPorEmail(email) != null || 
-            encontrarCoordenadorPorEmail(email) != null ||
-            encontrarAdministradorPorEmail(email) != null) {
-            throw new EntidadeException("Email já está em uso");
-        }
+        validarTexto(nomeCompleto, "Nome");
+        validarTexto(password, "Password");
+        validarEmailLivre(email);
         
         Administrador admin = new Administrador(nomeCompleto, email, password);
         administradores.add(admin);
@@ -317,9 +350,11 @@ public class SistemaLaboratorios implements Serializable {
     
     // ========== Gerir Projetos ==========
     
-    public Projeto criarProjeto(String titulo, String areaCientifica, int coordenadorId) 
+    public Projeto criarProjeto(String titulo, String areaCientifica, int coordenadorId)
             throws EntidadeException {
-        Coordenador coord = encontrarCoordenadorPorId(coordenadorId);
+        validarTexto(titulo, "Título");
+        
+        Coordenador coord= encontrarCoordenadorPorId(coordenadorId);
         if (coord == null) {
             throw new EntidadeException("Coordenador não encontrado");
         }
@@ -379,10 +414,14 @@ public class SistemaLaboratorios implements Serializable {
             throw new EntidadeException("Investigador não encontrado");
         }
         
+        if (projeto.getInvestigadoresIds().contains(investigadorId)) {
+            throw new EntidadeException("Investigador já pertence ao projeto");
+        }
+        
         projeto.adicionarInvestigador(investigadorId);
         investigador.adicionarProjeto(projetoId);
         
-        // Adicionar o laboratório do investigador ao projeto
+        // Adicionar o laboratóriodo investigador ao projeto
         int labId = investigador.getLaboratorioId();
         if (!projeto.getLaboratoriosIds().contains(labId)) {
             projeto.adicionarLaboratorio(labId);
@@ -403,6 +442,10 @@ public class SistemaLaboratorios implements Serializable {
         Investigador investigador = encontrarInvestigadorPorId(investigadorId);
         if (investigador == null) {
             throw new EntidadeException("Investigador não encontrado");
+        }
+        
+        if (!projeto.getInvestigadoresIds().contains(investigadorId)) {
+            throw new EntidadeException("Investigador não pertence ao projeto");
         }
         
         projeto.removerInvestigador(investigadorId);
@@ -466,55 +509,48 @@ public class SistemaLaboratorios implements Serializable {
     
     // ========== Gerir Atividades ==========
     
-    public Atividade registarAtividade(int projetoId, int investigadorId, 
-                                      String tipoAtividade, double duracaoHoras) 
+    public Atividade registarAtividade(int projetoId, int investigadorId,
+                                      String tipoAtividade, double duracaoHoras)
+            throws EntidadeException {
+        return registarAtividade(projetoId, investigadorId, tipoAtividade, LocalDate.now(), duracaoHoras);
+    }
+
+    public Atividade registarAtividade(int projetoId, int investigadorId,
+                                      String tipoAtividade, LocalDate data, double duracaoHoras)
             throws EntidadeException {
         Projeto projeto = encontrarProjetoPorId(projetoId);
         if (projeto == null) {
             throw new EntidadeException("Projeto não encontrado");
         }
-        
+
         Investigador investigador = encontrarInvestigadorPorId(investigadorId);
         if (investigador == null) {
             throw new EntidadeException("Investigador não encontrado");
         }
-        
+
         // Verificar se o investigador está no projeto
         if (!projeto.getInvestigadoresIds().contains(investigadorId)) {
             throw new EntidadeException("Investigador não pertence ao projeto");
         }
-        
-        Atividade atividade = new Atividade(projetoId, investigadorId, tipoAtividade, duracaoHoras);
-        atividades.add(atividade);
-        investigador.adicionarAtividade(atividade.getId());
-        
-        return atividade;
-    }
-    
-    public Atividade registarAtividade(int projetoId, int investigadorId, 
-                                      String tipoAtividade, LocalDate data, double duracaoHoras) 
-            throws EntidadeException {
-        Projeto projeto = encontrarProjetoPorId(projetoId);
-        if (projeto == null) {
-            throw new EntidadeException("Projeto não encontrado");
+
+        // Projetos concluídos ou suspensos não aceitam atividades
+        if (!projeto.aceitaAtividades()) {
+            throw new EntidadeException("O projeto está " + projeto.getEstado().getDescricao()
+                                        + " e não aceita atividades");
         }
-        
-        Investigador investigador = encontrarInvestigadorPorId(investigadorId);
-        if (investigador == null) {
-            throw new EntidadeException("Investigador não encontrado");
+
+        validarTexto(tipoAtividade, "Tipo de atividade");
+        if (duracaoHoras <= 0) {
+            throw new EntidadeException("A duração tem de ser maior que 0");
         }
-        
-        if (!projeto.getInvestigadoresIds().contains(investigadorId)) {
-            throw new EntidadeException("Investigador não pertence ao projeto");
-        }
-        
+
         Atividade atividade = new Atividade(projetoId, investigadorId, tipoAtividade, data, duracaoHoras);
         atividades.add(atividade);
         investigador.adicionarAtividade(atividade.getId());
-        
+
         return atividade;
     }
-    
+
     public List<Atividade> listarAtividades() {
         return new ArrayList<>(atividades);
     }

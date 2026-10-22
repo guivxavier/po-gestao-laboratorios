@@ -171,29 +171,30 @@ public class InterfaceTexto {
         
         int opcao = lerOpcao();
         
-        switch (opcao) {
-            case 1:
-                System.out.print("Novo nome: ");
-                String novoNome = scanner.nextLine().trim();
-                investigador.setNomeCompleto(novoNome);
-                System.out.println("[OK] Nome atualizado!");
-                break;
-            case 2:
-                System.out.print("Novo email: ");
-                String novoEmail = scanner.nextLine().trim();
-                investigador.setEmail(novoEmail);
-                System.out.println("[OK] Email atualizado!");
-                break;
-            case 3:
-                System.out.print("Nova password: ");
-                String novaPassword = scanner.nextLine().trim();
-                investigador.setPassword(novaPassword);
-                System.out.println("[OK] Password atualizada!");
-                break;
-            case 0:
-                return;
-            default:
-                System.out.println("[ERRO] Opção inválida!");
+        try {
+            switch (opcao) {
+                case 1:
+                    System.out.print("Novo nome: ");
+                    sistema.alterarNome(investigador, scanner.nextLine().trim());
+                    System.out.println("[OK] Nome atualizado!");
+                    break;
+                case 2:
+                    System.out.print("Novo email: ");
+                    sistema.alterarEmail(investigador, scanner.nextLine().trim());
+                    System.out.println("[OK] Email atualizado!");
+                    break;
+                case 3:
+                    System.out.print("Nova password: ");
+                    sistema.alterarPassword(investigador, scanner.nextLine().trim());
+                    System.out.println("[OK] Password atualizada!");
+                    break;
+                case 0:
+                    return;
+                default:
+                    System.out.println("[ERRO] Opção inválida!");
+            }
+        } catch (EntidadeException e) {
+            System.out.println("[ERRO] " + e.getMessage());
         }
         
         aguardarEnter();
@@ -480,7 +481,7 @@ public class InterfaceTexto {
             List<Projeto> projetosDisponiveis = new ArrayList<>();
             
             for (Projeto p : projetos) {
-                if (p.getEstado().name().equals("EM_CURSO") || p.getEstado().name().equals("PLANEAMENTO")) {
+                if (p.aceitaAtividades()) {
                     projetosDisponiveis.add(p);
                 }
             }
@@ -501,14 +502,8 @@ public class InterfaceTexto {
             int projetoId = Integer.parseInt(scanner.nextLine().trim());
             
             Projeto projeto = sistema.obterProjetoDoCoordenador(projetoId, coordenador.getId());
-            
-            if (!projeto.getEstado().name().equals("EM_CURSO") && !projeto.getEstado().name().equals("PLANEAMENTO")) {
-                System.out.println("\n[ERRO] Só pode registar atividades em projetos EM_CURSO ou PLANEAMENTO!");
-                aguardarEnter();
-                return;
-            }
-            
-            // Mostrar investigadores do projeto
+
+// Mostrar investigadores do projeto
             System.out.println("\nInvestigadores no projeto:");
             for (int invId : projeto.getInvestigadoresIds()) {
                 Investigador inv = sistema.obterInvestigador(invId);
@@ -522,7 +517,7 @@ public class InterfaceTexto {
             String tipo = scanner.nextLine().trim();
             
             System.out.print("Duração em horas: ");
-            double duracao = Double.parseDouble(scanner.nextLine().trim());
+            double duracao = lerDecimal();
             
             Atividade atividade = sistema.registarAtividade(projetoId, investigadorId, tipo, duracao);
             System.out.println("\n[OK] Atividade registada com sucesso!");
@@ -728,18 +723,28 @@ public class InterfaceTexto {
             
             int tipo = lerOpcao();
             String tipoStr;
+            String perguntaDetalhe;
             
             switch (tipo) {
-                case 1: tipoStr = "Biotecnologia"; break;
-                case 2: tipoStr = "Robótica"; break;
-                case 3: tipoStr = "Energia"; break;
+                case 1:
+                    tipoStr = "Biotecnologia";
+                    perguntaDetalhe = "Área de investigação (ex: Microbiologia, Genética): ";
+                    break;
+                case 2:
+                    tipoStr = "Robótica";
+                    perguntaDetalhe = "Tipo de sistema (ex: Drones, Veículos Autónomos): ";
+                    break;
+                case 3:
+                    tipoStr = "Energia";
+                    perguntaDetalhe = "Fonte energética (ex: Solar, Eólica): ";
+                    break;
                 default:
                     System.out.println("[ERRO] Tipo inválido!");
                     aguardarEnter();
                     return;
             }
             
-            System.out.print("Detalhe extra (Ex: Nº Licença ou Grau): ");
+            System.out.print(perguntaDetalhe);
             String detalhe = scanner.nextLine().trim();
             
             // Mostrar laboratórios
@@ -1095,6 +1100,11 @@ public class InterfaceTexto {
         } catch (NumberFormatException e) {
             return -1;
         }
+    }
+    
+    // Aceita "8.5" e "8,5"
+    private double lerDecimal() {
+        return Double.parseDouble(scanner.nextLine().trim().replace(',', '.'));
     }
     
     private void aguardarEnter() {
