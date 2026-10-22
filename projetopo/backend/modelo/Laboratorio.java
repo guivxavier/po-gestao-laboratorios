@@ -88,14 +88,14 @@ public class Laboratorio implements Serializable {
         projetosIds.remove(Integer.valueOf(projetoId));
     }
     
-    public int getNumProjetosAtivos() {
+    public int getNumProjetos() {
         return projetosIds.size();
     }
     
     @Override
     public String toString() {
-        return String.format("ID: %d | Nome: %s | Localização: %s | Investigadores: %d | Projetos Ativos: %d",
-            id, nome, localizacao, investigadoresIds.size(), getNumProjetosAtivos());
+        return String.format("ID: %d | Nome: %s | Localização: %s | Investigadores: %d | Projetos: %d",
+            id, nome, localizacao, investigadoresIds.size(), getNumProjetos());
     }
     
     @Override
@@ -104,5 +104,10 @@ public class Laboratorio implements Serializable {
         if (obj == null || getClass() != obj.getClass()) return false;
         Laboratorio that = (Laboratorio) obj;
         return id == that.id;
+    }
+    
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(id);
     }
 }

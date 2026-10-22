@@ -20,6 +20,15 @@ public class InterfaceTexto {
     public void iniciar() {
         mostrarCabecalho();
         
+        try {
+            ciclo();
+        } catch (NoSuchElementException e) {
+            System.out.println("\nFim da entrada. A guardar os dados...");
+            guardarESair();
+        }
+    }
+    
+    private void ciclo() {
         while (true) {
             if (utilizadorAtual == null) {
                 menuLogin();
@@ -138,7 +147,7 @@ public class InterfaceTexto {
                 logout();
                 break;
             default:
-                System.out.println("❌ Opção inválida!");
+                System.out.println("[ERRO] Opção inválida!");
         }
     }
     

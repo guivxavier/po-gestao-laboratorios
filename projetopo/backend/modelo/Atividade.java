@@ -109,4 +109,9 @@ public class Atividade implements Serializable {
         Atividade that = (Atividade) obj;
         return id == that.id;
     }
+    
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(id);
+    }
 }

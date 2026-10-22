@@ -76,5 +76,10 @@ public abstract class Utilizador implements Serializable {
         return id == that.id;
     }
     
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(id);
+    }
+    
     public abstract String getTipo();
 }

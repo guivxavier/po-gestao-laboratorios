@@ -142,4 +142,9 @@ public class Projeto implements Serializable {
         Projeto that = (Projeto) obj;
         return id == that.id;
     }
+    
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(id);
+    }
 }

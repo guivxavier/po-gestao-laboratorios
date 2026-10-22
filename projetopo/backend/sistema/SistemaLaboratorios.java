@@ -366,7 +366,6 @@ public class SistemaLaboratorios implements Serializable {
         return projeto;
     }
 
-    // --- NOVO MÉTODO ADICIONADO ---
     public void removerProjeto(int projetoId) throws EntidadeException {
         Projeto projeto = encontrarProjetoPorId(projetoId);
         if (projeto == null) {
@@ -600,7 +599,7 @@ public class SistemaLaboratorios implements Serializable {
     }
     
     public Map<String, Integer> obterEstatisticasGerais() {
-        Map<String, Integer> stats = new HashMap<>();
+        Map<String, Integer> stats = new LinkedHashMap<>();
         stats.put("Total Investigadores", investigadores.size());
         stats.put("Total Coordenadores", coordenadores.size());
         stats.put("Total Laboratórios", laboratorios.size());
